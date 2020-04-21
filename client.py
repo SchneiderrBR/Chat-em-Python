@@ -1,8 +1,18 @@
 from socket import *
 from threading import Thread
 
-clientSocket = socket(AF_INET6)
-clientSocket.connect(('localhost', 12000))
+ipv4 = 'localhost'
+ipv6 = '::1'
+porta = 12000
+
+info = getaddrinfo('localhost', None)[0]
+if info[0] == AF_INET:  # IPv4
+    clientSocket = socket(AF_INET)
+    clientSocket.connect((ipv4, porta))
+else:
+    clientSocket = socket(AF_INET6)
+    clientSocket.connect((ipv6, porta))
+
 recvMsg = clientSocket.recv(1024)
 print(recvMsg.decode())  # confirmação de conexão
 
