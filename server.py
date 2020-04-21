@@ -1,12 +1,37 @@
 from socket import *
 from threading import Thread
+import time
+
+ipv4 = '0.0.0.0'
+ipv6 = '::'
+porta = 12000
 
 socketList = []
 users = {}
-serverSocket = socket(AF_INET, SOCK_STREAM)
-serverSocket.bind(('localhost', 12000))
-serverSocket.listen()
-socketList.append(serverSocket)
+
+def setupIpv4():
+    serverSocket = socket(AF_INET, SOCK_STREAM)
+    serverSocket.bind((ipv4, porta))
+    serverSocket.listen()
+    socketList.append(serverSocket)
+    while True:
+        sock, addr = serverSocket.accept()
+        socketList.append(sock)
+        sock.send("conectado em: IPV4:12000".encode())
+        Thread(target=client, args=([sock])).start()
+
+
+def setupIpv6():
+    serverSocket = socket(AF_INET6, SOCK_STREAM)
+    serverSocket.bind((ipv6, porta))
+    serverSocket.listen()
+    socketList.append(serverSocket)
+    while True:
+        sock, addr = serverSocket.accept()
+        socketList.append(sock)
+        sock.send("conectado em: IPV6:12000".encode())
+        Thread(target=client, args=([sock])).start()
+
 
 def client(sock):
     while True:
@@ -29,8 +54,9 @@ def client(sock):
         except:
             continue
 
+
+Thread(target=setupIpv4).start()
+Thread(target=setupIpv6).start()
+
 while True:
-    sock, addr = serverSocket.accept()
-    socketList.append(sock)
-    sock.send(("conectado em: " + str(addr)).encode())
-    Thread(target=client, args=([sock])).start()
+    time.sleep(10)

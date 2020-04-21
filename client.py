@@ -1,7 +1,7 @@
 from socket import *
 from threading import Thread
 
-clientSocket = socket()
+clientSocket = socket(AF_INET6)
 clientSocket.connect(('localhost', 12000))
 recvMsg = clientSocket.recv(1024)
 print(recvMsg.decode())  # confirmação de conexão
@@ -17,7 +17,7 @@ def receive():
         print("> " + recvMsg.decode())
 
 
-Thread(target=receive, args=()).start()
+Thread(target=receive).start()
 
 # print("[User:Mensagem]")
 while True:
