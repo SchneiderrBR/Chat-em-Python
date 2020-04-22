@@ -2,6 +2,7 @@ from socket import *
 from threading import Thread
 import json
 import time
+from protocol import Ptc
 
 ipv4 = '0.0.0.0'
 ipv6 = '::'
@@ -19,7 +20,7 @@ def setupIpv4():
     while True:
         sock, addr = serverSocket.accept()
         socketList.append(sock)
-        sock.send("conectado em: IPV4:12000".encode())
+        sock.send(Ptc.message('', '"conectado em: IPV4:12000"'))
         Thread(target=client, args=([sock])).start()
 
 
@@ -31,33 +32,27 @@ def setupIpv6():
     while True:
         sock, addr = serverSocket.accept()
         socketList.append(sock)
-        sock.send("conectado em: IPV6:12000".encode())
+        sock.send(Ptc.message('', 'conectado em: IPV6:12000'))
         Thread(target=client, args=([sock])).start()
 
 
 def client(sock):
     while True:
         try:
-            data = sock.recv(2048).decode()
-            if data.startswith("¥"):
-
-                if data[1:].lower() in users:
-                    sock.send("0".encode())
+            data = json.loads(sock.recv(2048).decode())
+            if data["op"] == "LOGIN":
+                if data["name"].lower() in users:
+                    sock.send(Ptc.error('username already exist'))
                 else:
-                    users[data[1:].lower()] = sock
-                    print("User " + data[1:] + " added.")
-                    sock.send("1".encode())
+                    users[data["name"].lower()] = sock
+                    print("User " + data["name"] + " added.")
+                    sock.send(Ptc.login(data["name"].lower()))
 
-            elif data.find("§@:") != -1:
+            elif data["target"] == "&":
                 for u in users:
-                    user = data.split("§")[1]
-                    msg = data.split("§")[2].split(":")[1]
-                    users[u].send((user + ": " + msg).encode())
-            elif data.startswith("§"):
-                user = data.split("§")[1]
-                msg = data.split("§")[2].split(":")[1]
-                dest = data.split("§")[2].split(":")[0]
-                users[dest].send((user + ": " + msg).encode())
+                    users[u].send(Ptc.message('&', data["message"], 'user'))
+            else:
+                users[data["target"]].send(Ptc.message('§@', data["message"], 'user'))
         except:
             continue
 
