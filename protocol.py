@@ -1,72 +1,84 @@
+import json
+
 class Ptc:
 
     @staticmethod
-    def disconnect(message: str) -> bytes:
-        return ('{"op": "DISCONNECT", "message": "' + message + '"}').encode()
+    def disconnect(message: str = None) -> bytes:
+        if message is None:
+            return json.dumps({"op": "DISCONNECT"}).encode()
+        else:
+            return json.dumps({"op": "DISCONNECT", "message": message}).encode()
 
     @staticmethod
     def error(message: str) -> bytes:
-        return ('{"op": "ERROR", "message": "' + message + '"}').encode()
+        return json.dumps({"op": "ERROR", "message": message}).encode()
 
     @staticmethod
     def login(username: str, hash: str = None) -> bytes:
-        if hash != None:
-            return ('{"op": "LOGIN", "name": "' + username + '", "hash": "' + hash + '"}').encode()
+        if hash is None:
+            return json.dumps({"op": "LOGIN", "name": username}).encode()
         else:
-            return ('{"op": "LOGIN", "name": "' + username + '"}').encode()
+            return json.dumps({"op": "LOGIN", "name": username, "hash": hash}).encode()
+
+    # Sends a message, target can be:
+    # - Username
+    # - #channel
+    # - * (all users)
+    # - & (all users in this server)
+    @staticmethod
+    def message(target: str, message: str, username: str = None, hash: str = None) -> bytes:
+        if hash is None and username is None:
+            return json.dumps({"op": "MESSAGE", "target": target, "message": message}).encode()
+        elif hash is None:
+            return json.dumps(
+                {"op": "MESSAGE", "name": username, "target": target, "message": message}).encode()
+        else:
+            return json.dumps(
+                {"op": "MESSAGE", "name": username, "hash": hash, "target": target, "message": message}).encode()
 
     @staticmethod
-    def message(target: str, mesage: str, username: str = None, hash: str = None) -> bytes:
-        if hash != None:
-            return (
-                    '{"op": "MESSAGE", "name": "' + username + '", "target": "' + target + '", "message": "' + mesage + '", hash: "' + hash + '"}').encode()
-        elif username != None:
-            return (
-                    '{"op": "MESSAGE", "name": "' + username + '", "target": "' + target + '", "message": "' + mesage + '"}').encode()
+    def join(channel: str, username: str = None, passwd: str = None) -> bytes:
+        if passwd is None and username is None:
+            return json.dumps({"op": "JOIN", "channel": channel}).encode()
+        elif passwd is None:
+            return json.dumps({"op": "JOIN", "channel": channel, "user": username}).encode()
         else:
-            return ('{"op": "MESSAGE", "target": "' + target + '", "message": "' + mesage + '"}').encode()
+            return json.dumps({"op": "JOIN", "channel": channel, "user": username, "pass": passwd}).encode()
 
     @staticmethod
-    def join(channel: str, username: str, passw: str = None) -> bytes:
-        if passw != None:
-            return (
-                    '{"op": "JOIN", "user": "' + username + '", "channel": "' + channel + '", "pass": "' + passw + '"}').encode()
+    def part(channel: str, username: str = None) -> bytes:
+        if username is None:
+            return json.dumps({"op": "PART", "channel": channel}).encode()
         else:
-            return ('{"op": "JOIN", "user": "' + username + '", "channel": "' + channel + '"}').encode()
-
-    @staticmethod
-    def part(channel: str, username: str) -> bytes:
-        return ('{"op": "PART", "user": "' + username + '", "channel": "' + channel + '"}').encode()
+            return json.dumps({"op": "PART", "channel": channel, "user": username}).encode()
 
     @staticmethod
     def admin(channel: str, username: str) -> bytes:
-        return ('{"op": "ADMIN", "user": "' + username + '", "channel": "' + channel + '"}').encode()
+        return json.dumps({"op": "ADMIN", "channel": channel, "user": username}).encode()
 
     @staticmethod
     def kick(channel: str, username: str, message: str = None) -> bytes:
-        if message != None:
-            return (
-                    '{"op": "KICK", "user": "' + username + '", "channel": "' + channel + '", "message": "' + message + '"}').encode()
+        if message is None:
+            return json.dumps({"op": "KICK", "channel": channel, "user": username}).encode()
         else:
-            return ('{"op": "KICK", "user": "' + username + '", "channel": "' + channel + '"}').encode()
+            return json.dumps({"op": "KICK", "channel": channel, "user": username, "message": message}).encode()
 
     @staticmethod
-    def ack(success: str, hash: str) -> bytes:
-        return ('{"op": "ACK", "hash": "' + hash + '", "success": ' + success + '}').encode()
-
-    @staticmethod  ###### TEM QUE DAR UMA OLHADA NESSE CARA #####    LISTA DE OBJ? CHAVE VALOR? DUAS LISTAS?
-    def channels(channelList: list = None) -> bytes:
-        if channelList != None:
-            for a in channelList:  ### str = str undefined, funciona?
-                lst = lst + '{"name": "' + a.name + '", "pass": "' + a.passw + '"},'
-            return ('{"op": "CHANNELS", "channels": [' + lst[:-1] + '] }').encode()
-        else:
-            return '{"op": "CHANNELS"}'.encode()
+    def ack(hash: str, success: bool) -> bytes:
+        return json.dumps({"op": "ACK", "hash": hash, "success": success}).encode()
 
     @staticmethod
-    def users(userList: list, hash: str, channel: str = None) -> bytes:
-        if channel != None:
-            return (
-                        '{"op": "USERS", "channel": "' + channel + '", "userList": "' + userList + '", "hash": "' + hash + '"}').encode()
+    def channels(channels: list = None) -> bytes:
+        if channels is None:
+            return json.dumps({"op": "CHANNELS"}).encode()
         else:
-            return ('{"op": "USERS", "hash": "' + hash + '"}').encode()
+            return json.dumps({"op": "CHANNELS", "channels": channels}).encode()
+
+    @staticmethod
+    def users(hash: str, channel: str = None, users: list = None) -> bytes:
+        if channel is None and users is None:
+            return json.dumps({"op": "USERS", "hash": hash}).encode()
+        elif users is None:
+            return json.dumps({"op": "USERS", "hash": hash, "channel": channel}).encode()
+        else:
+            return json.dumps({"op": "USERS", "hash": hash, "channel": channel, "users": users}).encode()
