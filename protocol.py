@@ -2,7 +2,7 @@ class Ptc:
 
     @staticmethod
     def disconnect(message: str) -> bytes:
-        return ('{"op": "DISCONNECT", message: "' + message + '"}').encode()
+        return ('{"op": "DISCONNECT", "message": "' + message + '"}').encode()
 
     @staticmethod
     def error(message: str) -> bytes:
@@ -46,12 +46,12 @@ class Ptc:
     def kick(channel: str, username: str, message: str = None) -> bytes:
         if message != None:
             return (
-                    '{"op": "KICK", "user": "' + username + '", "channel": "' + channel + '", message?: "' + message + '"}').encode()
+                    '{"op": "KICK", "user": "' + username + '", "channel": "' + channel + '", "message": "' + message + '"}').encode()
         else:
             return ('{"op": "KICK", "user": "' + username + '", "channel": "' + channel + '"}').encode()
 
     @staticmethod
-    def ack(hash: str, success: str) -> bytes:
+    def ack(success: str, hash: str) -> bytes:
         return ('{"op": "ACK", "hash": "' + hash + '", "success": ' + success + '}').encode()
 
     @staticmethod  ###### TEM QUE DAR UMA OLHADA NESSE CARA #####    LISTA DE OBJ? CHAVE VALOR? DUAS LISTAS?
@@ -64,8 +64,9 @@ class Ptc:
             return '{"op": "CHANNELS"}'.encode()
 
     @staticmethod
-    def users(hash: str, channel: str = None) -> bytes:
+    def users(userList: list, hash: str, channel: str = None) -> bytes:
         if channel != None:
-            return ('{"op": "USERS", channel?: "' + channel + '", "hash": "' + hash + '"}').encode()
+            return (
+                        '{"op": "USERS", "channel": "' + channel + '", "userList": "' + userList + '", "hash": "' + hash + '"}').encode()
         else:
             return ('{"op": "USERS", "hash": "' + hash + '"}').encode()
