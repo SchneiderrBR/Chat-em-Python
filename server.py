@@ -1,5 +1,6 @@
 from socket import *
 from threading import Thread
+import json
 import time
 
 ipv4 = '0.0.0.0'
@@ -8,6 +9,7 @@ porta = 12000
 
 socketList = []
 users = {}
+
 
 def setupIpv4():
     serverSocket = socket(AF_INET, SOCK_STREAM)
@@ -38,9 +40,14 @@ def client(sock):
         try:
             data = sock.recv(2048).decode()
             if data.startswith("¥"):
-                users[data[1:].lower()] = sock
-                print("User " + data[1:] + " added.")
-                sock.send(("Seu user é: " + str(data[1:])).encode())
+
+                if data[1:].lower() in users:
+                    sock.send("0".encode())
+                else:
+                    users[data[1:].lower()] = sock
+                    print("User " + data[1:] + " added.")
+                    sock.send("1".encode())
+
             elif data.find("§@:") != -1:
                 for u in users:
                     user = data.split("§")[1]
@@ -57,6 +64,11 @@ def client(sock):
 
 Thread(target=setupIpv4).start()
 Thread(target=setupIpv6).start()
+print("Servidor iniciado")
 
 while True:
+    cmd = input()
+    ##desligar servidor
+    ##enviar mensagem pra 1 user
+    ##enviar mensagem pra @
     time.sleep(10)

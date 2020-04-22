@@ -16,9 +16,17 @@ else:
 recvMsg = clientSocket.recv(1024)
 print(recvMsg.decode())  # confirmação de conexão
 
-user = input("Digite seu Username:")
-sendMsg = '¥' + user
-clientSocket.send(sendMsg.encode())
+
+def login():
+    global user
+    user = input("Digite seu Username:")
+    sendMsg = '¥' + user
+    clientSocket.send(sendMsg.encode())
+    if clientSocket.recv(1024).decode() == '1':
+        print("Seu user é: " + user)
+    else:
+        print("Nome de usuario nao disponivel")
+        login()
 
 
 def receive():
@@ -27,6 +35,7 @@ def receive():
         print("> " + recvMsg.decode())
 
 
+login()
 Thread(target=receive).start()
 
 # print("[User:Mensagem]")
