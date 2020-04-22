@@ -6,10 +6,11 @@ from protocol import Ptc
 
 ipv4 = '0.0.0.0'
 ipv6 = '::'
-porta = 12000
+porta = 12001
 
 socketList = []
 users = {}
+channels = {}
 
 
 def setupIpv4():
@@ -20,7 +21,7 @@ def setupIpv4():
     while True:
         sock, addr = serverSocket.accept()
         socketList.append(sock)
-        sock.send(Ptc.message('', '"conectado em: IPV4:12000"'))
+        sock.send(Ptc.message('', 'conectado em: '+ipv4+':'+str(porta)))
         Thread(target=client, args=([sock])).start()
 
 
@@ -32,7 +33,7 @@ def setupIpv6():
     while True:
         sock, addr = serverSocket.accept()
         socketList.append(sock)
-        sock.send(Ptc.message('', 'conectado em: IPV6:12000'))
+        sock.send(Ptc.message('', 'conectado em: '+ipv6+':'+str(porta)))
         Thread(target=client, args=([sock])).start()
 
 
@@ -40,19 +41,44 @@ def client(sock):
     while True:
         try:
             data = json.loads(sock.recv(2048).decode())
-            if data["op"] == "LOGIN":
+            if data["op"] == "MESSAGE":
+                if data["target"] == "&":
+                    for u in users:
+                        users[u].send(Ptc.message('&', data["message"], 'user'))
+                if data["target"][:1] == "#":
+                    for c in channels:
+                        if c == data["target"][1:]:
+                            for u in channels[c]:
+                                if u.startswith("§§"):
+                                    u = u[2:]
+                                users[u].send(Ptc.message(data["target"], data["message"], 'user'))
+                        break
+                else:
+                    users[data["target"]].send(Ptc.message('§§', data["message"], 'user'))
+            elif data["op"] == "LOGIN":
                 if data["name"].lower() in users:
                     sock.send(Ptc.error('username already exist'))
                 else:
                     users[data["name"].lower()] = sock
                     print("User " + data["name"] + " added.")
                     sock.send(Ptc.login(data["name"].lower()))
-
-            elif data["target"] == "&":
+            elif data["op"] == "DISCONNECT":
                 for u in users:
-                    users[u].send(Ptc.message('&', data["message"], 'user'))
-            else:
-                users[data["target"]].send(Ptc.message('§@', data["message"], 'user'))
+                    if users[u] == sock:
+                        print(u + " foi desconectado")
+                        users.remove(u)
+                        break
+            elif data["op"] == "JOIN":
+                for u in users:
+                    if users[u] == sock:
+                        if data["channel"] not in channels:
+                            channels[data["channel"]] = ["§§" + u]
+                            sock.send(Ptc.message("","Voce criou o canal: "+ data["channel"],None))
+                        else:
+                            channels[data["channel"]].append(u)
+                            sock.send(Ptc.message("","Voce entrou no canal: "+ data["channel"],None))
+                            ##avisar outor users no canal
+                        break
         except:
             continue
 
