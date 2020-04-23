@@ -5,7 +5,7 @@ from protocol import Ptc
 
 ipv4 = 'localhost'
 ipv6 = '::1'
-porta = 12001
+porta = 12000
 
 info = getaddrinfo('localhost', None)[0]
 if info[0] == AF_INET:  # IPv4
@@ -45,47 +45,8 @@ def receive():
 login()
 Thread(target=receive).start()
 
-try:
-    while True:
-        sendMsg = input()
-        if sendMsg.startswith("/"):
-            if sendMsg.startswith('/join:'):
-                if len(sendMsg.split(':')) == 2:
-                    clientSocket.send(Ptc.join(sendMsg.split(':')[1]))
-                elif len(sendMsg.split(':')) == 3:
-                    clientSocket.send(Ptc.join(sendMsg.split(':')[1], None, sendMsg.split(':')[2]))
-                else:
-                    print('/help:join')
-            elif sendMsg.startswith('/exit:'):
-                if len(sendMsg.split(':')) == 2:
-                    clientSocket.send(Ptc.part(sendMsg.split(':')[1]))
-                else:
-                    print('/help:exit')
-            elif sendMsg.startswith('/help:'):
-                if len(sendMsg.split(':')) == 2:
-                    help(sendMsg.split(':')[1])
-                else:
-                    help()
-            else:
-                print("commando nao reconhecido, digite /help")
-        elif sendMsg.startswith("*:"):
-            clientSocket.send(Ptc.message('*', sendMsg.split(':')[1]))
-        elif sendMsg.startswith("&:"):
-            clientSocket.send(Ptc.message('&', sendMsg.split(':')[1]))
-        elif sendMsg.startswith("#"):
-            if len(sendMsg.split(':')) == 2:
-                clientSocket.send(Ptc.message(sendMsg.split(':')[0], sendMsg.split(':')[1]))
-            else:
-                print('/help:message')
-        elif len(sendMsg.split(':')) == 2:
-            clientSocket.send(Ptc.message(sendMsg.split(':')[0], sendMsg.split(':')[1]))
-        else:
-            print("commando nao reconhecido, digite /help")
-except:
-    clientSocket.send(Ptc.disconnect())
 
-
-def help(cmd=None):
+def helpp(cmd=None):
     if cmd == "join":
         print("/join:name         =>  Entra no canal 'name'")
         print("/join:name:pass    =>  Entra no canal 'name' com a senha 'pass'")
@@ -110,3 +71,43 @@ def help(cmd=None):
         print("   - /help:join")
         print("   - /help:exit")
         print("   - /help:admin")
+
+
+try:
+    while True:
+        sendMsg = input()
+        if sendMsg.startswith("/"):
+            if sendMsg.startswith('/join:'):
+                if len(sendMsg.split(':')) == 2:
+                    clientSocket.send(Ptc.join(sendMsg.split(':')[1]))
+                elif len(sendMsg.split(':')) == 3:
+                    clientSocket.send(Ptc.join(sendMsg.split(':')[1], None, sendMsg.split(':')[2]))
+                else:
+                    print('/help:join')
+            elif sendMsg.startswith('/exit:'):
+                if len(sendMsg.split(':')) == 2:
+                    clientSocket.send(Ptc.part(sendMsg.split(':')[1]))
+                else:
+                    print('/help:exit')
+            elif sendMsg.startswith('/help'):
+                if len(sendMsg.split(':')) == 2:
+                    helpp(sendMsg.split(':')[1])
+                else:
+                    helpp()
+            else:
+                print("commando nao reconhecido, digite /help")
+        elif sendMsg.startswith("*:"):
+            clientSocket.send(Ptc.message('*', sendMsg.split(':')[1]))
+        elif sendMsg.startswith("&:"):
+            clientSocket.send(Ptc.message('&', sendMsg.split(':')[1]))
+        elif sendMsg.startswith("#"):
+            if len(sendMsg.split(':')) == 2:
+                clientSocket.send(Ptc.message(sendMsg.split(':')[0], sendMsg.split(':')[1]))
+            else:
+                print('/help:message')
+        elif len(sendMsg.split(':')) == 2:
+            clientSocket.send(Ptc.message(sendMsg.split(':')[0], sendMsg.split(':')[1]))
+        else:
+            print("commando nao reconhecido, digite /help")
+except:
+    clientSocket.send(Ptc.disconnect())

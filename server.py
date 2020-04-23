@@ -6,7 +6,7 @@ from protocol import Ptc
 
 ipv4 = '0.0.0.0'
 ipv6 = '::'
-porta = 12001
+porta = 12000
 
 socketList = []
 users = {}
@@ -67,7 +67,7 @@ def client(sock):
                     sock.send(Ptc.login(data["name"].lower()))
             elif data["op"] == "DISCONNECT":
                 print(usr + " foi desconectado")
-                users.remove(usr)
+                del (users[usr])
                 break
             elif data["op"] == "JOIN":
                 if data["channel"] not in channels:
@@ -86,10 +86,10 @@ def client(sock):
                         for u in channels[data["channel"]]:
                             if u.startswith("§§"):
                                 u = u[2:]
-                            users[u].send(Ptc.message("",usr+" entrou no canal "+data["channel"]))
+                            users[u].send(Ptc.message("", usr + " entrou no canal " + data["channel"]))
 
                     else:
-                        if ("pass" not in data):
+                        if "pass" not in data:
                             sock.send(Ptc.message("", "Este canal possui senha!"))
                         else:
                             if data["pass"] == channelsPasw[data["channel"]]:
@@ -97,12 +97,29 @@ def client(sock):
                                 for u in channels[data["channel"]]:
                                     if u.startswith("§§"):
                                         u = u[2:]
-                                    users[u].send(Ptc.message("",usr+" entrou no canal "+data["channel"]))
+                                    users[u].send(Ptc.message("", usr + " entrou no canal " + data["channel"]))
                             else:
                                 sock.send(Ptc.message("", "Senha Incorreta!"))
-                # break
-        except:
-            continue
+            elif data["op"] == "PART":
+                if data["channel"] in channels:
+                    if usr in channels[data["channel"]]:
+                        for u in channels[data["channel"]]:
+                            if u.startswith("§§"):
+                                u = u[2:]
+                            users[u].send(Ptc.message("", usr + " saiu do canal " + data["channel"]))
+                        channels[data["channel"]].remove(usr)
+                    elif "§§" + usr in channels[data["channel"]]:
+                        for u in channels[data["channel"]]:
+                            if u.startswith("§§"):
+                                u = u[2:]
+                            users[u].send(Ptc.message("", usr + " saiu do canal " + data["channel"]))
+                        channels[data["channel"]].remove("§§" + usr)
+                    else:
+                        sock.send(Ptc.message("", "Voce nao esta neste canal"))
+                else:
+                    sock.send(Ptc.message("", "Esse canal nao existe"))
+        except Exception as e:
+            print(e)
 
 
 Thread(target=setupIpv4).start()
