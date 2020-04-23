@@ -11,6 +11,7 @@ porta = 12001
 socketList = []
 users = {}
 channels = {}
+channelsPasw = {}
 
 
 def setupIpv4():
@@ -72,13 +73,28 @@ def client(sock):
                 for u in users:
                     if users[u] == sock:
                         if data["channel"] not in channels:
-                            channels[data["channel"]] = ["§§" + u]
-                            sock.send(Ptc.message("","Voce criou o canal: "+ data["channel"],None))
+                            if "pass" not in data:
+                                channels[data["channel"]] = ["§§" + u]
+                                channelsPasw[data["channel"]] = "§§"
+                                sock.send(Ptc.message("","Voce criou o canal: "+ data["channel"]))
+                            else:
+                                channelsPasw[data["channel"]] = data["pass"]
+                                channels[data["channel"]] = ["§§" + u]
+                                sock.send(Ptc.message("","Voce criou o canal: "+ data["channel"]+" com a senha: "+ data["pass"]))
                         else:
-                            channels[data["channel"]].append(u)
-                            sock.send(Ptc.message("","Voce entrou no canal: "+ data["channel"],None))
-                            ##avisar outor users no canal
-                        break
+                            if channelsPasw[data["channel"]] == '§§':
+                                channels[data["channel"]].append(u)
+                                sock.send(Ptc.message("","Voce entrou no canal: "+ data["channel"]))
+                                ##avisar outor users no canal
+                            else:
+                                if("pass" not in data):
+                                    sock.send(Ptc.message("","Este canal possui senha!"))
+                                else:
+                                    if data["pass"] == channelsPasw[data["channel"]]:
+                                        channels[data["channel"]].append(u)
+                                        sock.send(Ptc.message("","Voce entrou no canal: "+ data["channel"]))
+                                    else: sock.send(Ptc.message("","Senha Incorreta!"))
+                        #break
         except:
             continue
 
