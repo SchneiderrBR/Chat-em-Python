@@ -52,13 +52,10 @@ def client(sock):
                     for u in users:
                         users[u].send(Ptc.message('&', data["message"], usr))
                 if data["target"][:1] == "#":
-                    for c in channels:
-                        if c == data["target"][1:]:
-                            for u in channels[c]:
-                                if u.startswith("§§"):
-                                    u = u[2:]
-                                users[u].send(Ptc.message(data["target"], data["message"], usr))
-                        break
+                    for u in channels[data["target"][1:]]:
+                        if u.startswith("§§"):
+                            u = u[2:]
+                        users[u].send(Ptc.message(data["target"], data["message"], usr))
                 else:
                     users[data["target"]].send(Ptc.message('§§', data["message"], usr))
             elif data["op"] == "LOGIN":
@@ -86,15 +83,21 @@ def client(sock):
                 else:
                     if channelsPasw[data["channel"]] == '§§':
                         channels[data["channel"]].append(usr)
-                        sock.send(Ptc.message("", "Voce entrou no canal: " + data["channel"]))
-                        ##avisar outor users no canal
+                        for u in channels[data["channel"]]:
+                            if u.startswith("§§"):
+                                u = u[2:]
+                            users[u].send(Ptc.message("",usr+" entrou no canal "+data["channel"]))
+
                     else:
                         if ("pass" not in data):
                             sock.send(Ptc.message("", "Este canal possui senha!"))
                         else:
                             if data["pass"] == channelsPasw[data["channel"]]:
                                 channels[data["channel"]].append(usr)
-                                sock.send(Ptc.message("", "Voce entrou no canal: " + data["channel"]))
+                                for u in channels[data["channel"]]:
+                                    if u.startswith("§§"):
+                                        u = u[2:]
+                                    users[u].send(Ptc.message("",usr+" entrou no canal "+data["channel"]))
                             else:
                                 sock.send(Ptc.message("", "Senha Incorreta!"))
                 # break
