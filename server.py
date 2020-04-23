@@ -22,7 +22,7 @@ def setupIpv4():
     while True:
         sock, addr = serverSocket.accept()
         socketList.append(sock)
-        sock.send(Ptc.message('', 'conectado em: '+ipv4+':'+str(porta)))
+        sock.send(Ptc.message('', 'conectado em: ' + ipv4 + ':' + str(porta)))
         Thread(target=client, args=([sock])).start()
 
 
@@ -34,7 +34,7 @@ def setupIpv6():
     while True:
         sock, addr = serverSocket.accept()
         socketList.append(sock)
-        sock.send(Ptc.message('', 'conectado em: '+ipv6+':'+str(porta)))
+        sock.send(Ptc.message('', 'conectado em: ' + ipv6 + ':' + str(porta)))
         Thread(target=client, args=([sock])).start()
 
 
@@ -76,25 +76,27 @@ def client(sock):
                             if "pass" not in data:
                                 channels[data["channel"]] = ["§§" + u]
                                 channelsPasw[data["channel"]] = "§§"
-                                sock.send(Ptc.message("","Voce criou o canal: "+ data["channel"]))
+                                sock.send(Ptc.message("", "Voce criou o canal: " + data["channel"]))
                             else:
                                 channelsPasw[data["channel"]] = data["pass"]
                                 channels[data["channel"]] = ["§§" + u]
-                                sock.send(Ptc.message("","Voce criou o canal: "+ data["channel"]+" com a senha: "+ data["pass"]))
+                                sock.send(Ptc.message("", "Voce criou o canal: " + data["channel"] + " com a senha: " +
+                                                      data["pass"]))
                         else:
                             if channelsPasw[data["channel"]] == '§§':
                                 channels[data["channel"]].append(u)
-                                sock.send(Ptc.message("","Voce entrou no canal: "+ data["channel"]))
+                                sock.send(Ptc.message("", "Voce entrou no canal: " + data["channel"]))
                                 ##avisar outor users no canal
                             else:
-                                if("pass" not in data):
-                                    sock.send(Ptc.message("","Este canal possui senha!"))
+                                if ("pass" not in data):
+                                    sock.send(Ptc.message("", "Este canal possui senha!"))
                                 else:
                                     if data["pass"] == channelsPasw[data["channel"]]:
                                         channels[data["channel"]].append(u)
-                                        sock.send(Ptc.message("","Voce entrou no canal: "+ data["channel"]))
-                                    else: sock.send(Ptc.message("","Senha Incorreta!"))
-                        #break
+                                        sock.send(Ptc.message("", "Voce entrou no canal: " + data["channel"]))
+                                    else:
+                                        sock.send(Ptc.message("", "Senha Incorreta!"))
+                        # break
         except:
             continue
 
@@ -105,7 +107,18 @@ print("Servidor iniciado")
 
 while True:
     cmd = input()
-    ##desligar servidor
-    ##enviar mensagem pra 1 user
-    ##enviar mensagem pra @
-    time.sleep(10)
+
+    if cmd.startswith('/'):
+        if cmd == "/lst users":
+            print(users)
+        elif cmd == "/lst channels":
+            print(channels)
+        elif cmd == "/lst passw":
+            print(channelsPasw)
+    elif cmd.startswith('send'):
+        if cmd.split(' ')[1].startswith('&'):
+            for u in users:
+                users[u].send(Ptc.message('&', cmd.split(':')[1]))
+        else:
+            users[cmd.split(' ')[1].split(':')[0]].send(Ptc.message('§§', cmd.split(':')[1]))
+    time.sleep(1)

@@ -51,20 +51,23 @@ try:
         sendMsg = input()
         if sendMsg.startswith("/"):
             if sendMsg.startswith('/join:'):
-                if(len(sendMsg.split(':')) == 2):
+                if (len(sendMsg.split(':')) == 2):
                     clientSocket.send(Ptc.join(sendMsg.split(':')[1]))
-                elif(len(sendMsg.split(':')) == 3):
-                    clientSocket.send(Ptc.join(sendMsg.split(':')[1],None,sendMsg.split(':')[2]))
-                else: print('/help join')
-            else: print("commando nao reconhecido, digite /help")
+                elif (len(sendMsg.split(':')) == 3):
+                    clientSocket.send(Ptc.join(sendMsg.split(':')[1], None, sendMsg.split(':')[2]))
+                else:
+                    print('/help join')
+            else:
+                print("commando nao reconhecido, digite /help")
         elif sendMsg.startswith("*:"):
             clientSocket.send(Ptc.message('*', sendMsg.split(':')[1]))
         elif sendMsg.startswith("&:"):
             clientSocket.send(Ptc.message('&', sendMsg.split(':')[1]))
         elif sendMsg.startswith("#"):
-            if(len(sendMsg.split(':')) == 2):
+            if (len(sendMsg.split(':')) == 2):
                 clientSocket.send(Ptc.message(sendMsg.split(':')[0], sendMsg.split(':')[1]))
-            else: print('/help message')
+            else:
+                print('/help message')
         elif len(sendMsg.split(':')) == 2:
             clientSocket.send(Ptc.message(sendMsg.split(':')[0], sendMsg.split(':')[1]))
         else:
